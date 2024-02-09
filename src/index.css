@@ -1,0 +1,92 @@
+body {
+  background-color: #242424;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  height: 800px;
+  width: 800px;
+  box-shadow: 0 0 20px ghostwhite;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.scene {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.scene img {
+  background: (url(https://i.redd.it/69e1d87us6ha1.gif));
+  object-fit: cover;
+  width: 100%;
+}
+
+.search {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: transparent;
+  width: 100%;
+  height: 100px;
+  z-index: 990;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.search form {
+  width: 50%;
+  height: 40px;
+  background: rgba(221, 221, 221, 0.36);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2.9px);
+  -webkit-backdrop-filter: blur(2.9px);
+  border: 1px solid rgba(221, 221, 221, 0.29);
+  /* overflow: hidden; */
+}
+
+.search input {
+  width: 99%;
+  height: 100%;
+  text-indent: 8px;
+  background-color: transparent;
+  border: none;
+  border-radius: 16px;
+  font-size: 20px;
+  color: ghostwhite;
+}
+
+.search input::placeholder {
+  color: rgb(192, 192, 197);
+}
+
+.search input:focus {
+  outline: none;
+  box-shadow: 0 0 16px rgb(64, 252, 255);
+}
+
+.poke-img {
+  border: 1px solid red;
+}
+
+.pokemon__container {
+  position: absolute;
+  top: 50%;
+  right: 10%;
+  width: 200px;
+  height: 200px;
+}
+
+.pokemon__container img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
