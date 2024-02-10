@@ -1,3 +1,10 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
 body {
   background-color: #242424;
   display: flex;
@@ -7,10 +14,17 @@ body {
   overflow: hidden;
 }
 
+.app {
+  display: flex;
+  height: 900px;
+  box-shadow: 0 0 22px ghostwhite;
+  border-radius: 16px;
+}
+
 .container {
-  height: 800px;
-  width: 800px;
-  box-shadow: 0 0 20px ghostwhite;
+  height: 100%;
+  width: 1000px;
+  display: flex;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -25,6 +39,16 @@ body {
   background: (url(https://i.redd.it/69e1d87us6ha1.gif));
   object-fit: cover;
   width: 100%;
+}
+
+.search-results {
+  position: relative;
+  display: inline-flex;
+  background: #242424;
+  border-radius: 16px 0 0 16px;
+  width: 250px;
+  height: 100%;
+  z-index: 2;
 }
 
 .search {
@@ -83,10 +107,38 @@ body {
   right: 10%;
   width: 200px;
   height: 200px;
+  border: 0 16px 16px 0;
 }
 
 .pokemon__container img {
   width: 200px;
   height: 200px;
   object-fit: cover;
+}
+
+ul {
+  background: transparent;
+  width: 100%;
+  padding: 10px;
+  list-style: none;
+}
+
+li {
+  color: ghostwhite;
+  text-shadow: 0 0 5px black;
+  font-size: 20px;
+  font-weight: bold;
+  border: 1px solid red;
+  height: 10%;
+  margin-bottom: 2px;
+  padding: 2px 2px 2px 16px;
+  background: rgba(103, 101, 101, 0.45);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  border: 1px solid rgba(32, 32, 32, 0.23);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
