@@ -12,10 +12,37 @@ const Pokedex = () => {
   const [animated, setAnimated] = useState('');
   const [type, setType] = useState([]);
   const [id, setId] = useState(0);
+  const [position, setPosition] = useState(id);
 
   const handleSearch = (value) => {
     setSearch(value);
   };
+
+  useEffect(() => {
+    if (id === 0) return;
+    setPosition(id - 1);
+  }, [id]);
+
+  const handlePrev = () => {
+    if (position === 0) return;
+    setPosition((prev) => prev - 1);
+  };
+
+  const handleNext = () => {
+    setPosition((prev) => prev + 1);
+  };
+
+  useEffect(() => {
+    const getPokemonList = async () => {
+      const res = await fetch(
+        `https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0`
+      );
+      const data = await res.json();
+      console.log(data.results);
+      setSearch(data.results[position].name);
+    };
+    getPokemonList();
+  }, [position]);
 
   useEffect(() => {
     if (!search) return;
@@ -47,13 +74,15 @@ const Pokedex = () => {
     } catch (err) {
       console.log(`ERROR: ${err}`);
     }
-  }, [search]);
+  }, [search, id]);
 
   return (
     <div className="pokedex">
       <PokedexLeft sprite={sprite} animated={animated} />
       <PokedexRight
         onHandleSearch={handleSearch}
+        onHandleNext={handleNext}
+        onHandlePrev={handlePrev}
         type={type}
         search={search}
         name={name}
@@ -139,12 +168,20 @@ const PokedexSmallScreen = () => {
   return <div className="pokedex-smallScreen" />;
 };
 
-const PokedexRight = ({ onHandleSearch, type, search, id, name }) => {
+const PokedexRight = ({
+  onHandleSearch,
+  type,
+  search,
+  id,
+  name,
+  onHandleNext,
+  onHandlePrev,
+}) => {
   return (
     <div className="pokedex-right">
       <PokedexSearch onHandleSearch={onHandleSearch} />
       <PokedexInfoScreen type={type} search={search} id={id} name={name} />
-      <PokedexButtons />
+      <PokedexButtons onHandleNext={onHandleNext} onHandlePrev={onHandlePrev} />
     </div>
   );
 };
@@ -187,7 +224,7 @@ const PokedexInfoScreen = ({ type, id, name }) => {
   );
 };
 
-const PokedexButtons = () => {
+const PokedexButtons = ({ id, onHandleNext, onHandlePrev, onHandleSearch }) => {
   return (
     <>
       <div className="pokedex-buttons-shadow" />
@@ -214,8 +251,12 @@ const PokedexButtons = () => {
       </div>
       <div className="pokedex-goldButton" />
       <div className="pokedex-blackButtons">
-        <button className="pokedex-blackButton">prev</button>
-        <button className="pokedex-blackButton">next</button>
+        <button className="pokedex-blackButton" onClick={onHandlePrev}>
+          prev
+        </button>
+        <button className="pokedex-blackButton" onClick={onHandleNext}>
+          next
+        </button>
       </div>
     </>
   );
