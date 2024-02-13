@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './index.css';
 
 function App() {
@@ -11,8 +11,13 @@ const Pokedex = () => {
   const [sprite, setSprite] = useState('');
   const [animated, setAnimated] = useState('');
   const [type, setType] = useState([]);
+  const [hp, setHp] = useState(0);
+  const [atk, setAtk] = useState(0);
+  const [def, setDef] = useState(0);
   const [id, setId] = useState(0);
   const [position, setPosition] = useState(id);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleSearch = (value) => {
     setSearch(value);
@@ -20,7 +25,12 @@ const Pokedex = () => {
 
   useEffect(() => {
     if (id === 0) return;
-    setPosition(id - 1);
+    if (id <= 1025) {
+      setPosition(id - 1);
+    }
+    if (id >= 10001) {
+      setPosition(id - 8976);
+    }
   }, [id]);
 
   const handlePrev = () => {
@@ -29,36 +39,49 @@ const Pokedex = () => {
   };
 
   const handleNext = () => {
+    if (position === 1301) return;
     setPosition((prev) => prev + 1);
   };
 
+  // TODO: !!!!! loading states, blinking lights
+  // might need settimeout for loadstate
+
   useEffect(() => {
     const getPokemonList = async () => {
-      const res = await fetch(
-        `https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0`
-      );
-      const data = await res.json();
-      console.log(data.results);
-      setSearch(data.results[position].name);
+      try {
+        const res = await fetch(
+          `https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0`
+        );
+        const data = await res.json();
+        setSearch(data.results[position].name);
+        console.log(data.results);
+      } catch (err) {
+        console.log(err);
+      }
     };
     getPokemonList();
   }, [position]);
 
   useEffect(() => {
     if (!search) return;
-    try {
-      const getPokemon = async () => {
+    setError(false);
+
+    const getPokemon = async () => {
+      try {
+        setLoading(true);
         const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${search}`);
 
-        if (!res.ok) throw new Error('Something went wrong fetching pokemon');
+        if (!res.ok) throw new Error('Something went wrong');
 
         const data = await res.json();
 
         if (!data) throw new Error('Pokemon not found');
-        console.log(data);
 
         setName(data.name);
         setId(data.id);
+        setHp(data.stats[0].base_stat);
+        setAtk(data.stats[1].base_stat);
+        setDef(data.stats[2].base_stat);
         setSprite(data.sprites.front_default);
         setAnimated(
           data['sprites']['versions']['generation-v']['black-white'][
@@ -69,16 +92,31 @@ const Pokedex = () => {
           data.types[0].type.name,
           data.types[1] ? data.types[1].type.name : null,
         ]);
-      };
-      getPokemon();
-    } catch (err) {
-      console.log(`ERROR: ${err}`);
-    }
+      } catch (err) {
+        setError(true);
+        setAnimated('');
+        setSprite('');
+      } finally {
+        setTimeout(() => {
+          setLoading(false);
+        }, 1000);
+      }
+    };
+
+    getPokemon();
   }, [search, id]);
 
   return (
     <div className="pokedex">
-      <PokedexLeft sprite={sprite} animated={animated} />
+      <PokedexLeft
+        sprite={sprite}
+        animated={animated}
+        loading={loading}
+        hp={hp}
+        atk={atk}
+        def={def}
+        error={error}
+      />
       <PokedexRight
         onHandleSearch={handleSearch}
         onHandleNext={handleNext}
@@ -87,36 +125,58 @@ const Pokedex = () => {
         search={search}
         name={name}
         id={id}
+        position={position}
+        loading={loading}
+        error={error}
       />
     </div>
   );
 };
 
-const PokedexLeft = ({ sprite, animated }) => {
+const PokedexLeft = ({ sprite, animated, loading, hp, atk, def, error }) => {
   return (
     <div className="pokedex-left">
-      <PokedexLights />
-      <PokedexScreen sprite={sprite} animated={animated} />
+      <PokedexLights loading={loading} />
+      <PokedexScreen sprite={sprite} animated={animated} loading={loading} />
       <PokedexControls />
-      <PokedexSmallScreen />
+      <PokedexSmallScreen
+        hp={hp}
+        atk={atk}
+        def={def}
+        loading={loading}
+        error={error}
+      />
     </div>
   );
 };
 
-const PokedexLights = () => {
+const PokedexLights = ({ loading }) => {
+  const lightOneRef = useRef(null);
+  const lightTwoRef = useRef(null);
+  const lightThreeRef = useRef(null);
+
+  useEffect(() => {
+    // Change box shadow when loading prop changes
+    if (loading) {
+      lightOneRef.current.classList.add = 'blink';
+      lightTwoRef.current.classList.add = 'blink';
+      lightThreeRef.current.classList.add = 'blink';
+    }
+  }, [loading]);
+
   return (
     <div className="pokedex-lights-container">
       <div className="pokedex-lights-lg" />
       <div className="pokedex-lights-sm-container">
-        <div className="pokedex-lights-sm-light one" />
-        <div className="pokedex-lights-sm-light two" />
-        <div className="pokedex-lights-sm-light three" />
+        <div ref={lightOneRef} className="pokedex-lights-sm-light one" />
+        <div ref={lightTwoRef} className="pokedex-lights-sm-light two" />
+        <div ref={lightThreeRef} className="pokedex-lights-sm-light three" />
       </div>
     </div>
   );
 };
 
-const PokedexScreen = ({ sprite, animated }) => {
+const PokedexScreen = ({ sprite, animated, loading }) => {
   return (
     <>
       <div className="pokedex-screen-cut" />
@@ -126,10 +186,15 @@ const PokedexScreen = ({ sprite, animated }) => {
           <div className="pokedex-screen-light" />
         </div>
         <div className="pokedex-screen-image-container">
-          <img
-            className="pokedex-screen-image"
-            src={animated ? animated : sprite}
-          />
+          {loading ? (
+            <Loader />
+          ) : (
+            <img
+              className="pokedex-screen-image"
+              src={animated ? animated : sprite}
+              alt="pokemon sprite"
+            />
+          )}
         </div>
         <div className="pokedex-screen-bottom">
           <div className="pokedex-screen-button" />
@@ -143,6 +208,10 @@ const PokedexScreen = ({ sprite, animated }) => {
       </div>
     </>
   );
+};
+
+const Loader = () => {
+  return <div className="ball"></div>;
 };
 
 const PokedexControls = () => {
@@ -164,8 +233,24 @@ const PokedexControls = () => {
   );
 };
 
-const PokedexSmallScreen = () => {
-  return <div className="pokedex-smallScreen" />;
+const PokedexSmallScreen = ({ hp, atk, def, error, loading }) => {
+  return (
+    <div className="pokedex-smallScreen">
+      <div className="pokedex-smallscreen-text-container">
+        {loading ? (
+          <p>Loading...</p>
+        ) : !error ? (
+          <>
+            <p>HP: {hp}</p>
+            <p>ATK: {atk}</p>
+            <p>DEF: {def}</p>
+          </>
+        ) : (
+          <p>Error</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 const PokedexRight = ({
@@ -173,15 +258,29 @@ const PokedexRight = ({
   type,
   search,
   id,
+  position,
   name,
   onHandleNext,
   onHandlePrev,
+  loading,
+  error,
 }) => {
   return (
     <div className="pokedex-right">
       <PokedexSearch onHandleSearch={onHandleSearch} />
-      <PokedexInfoScreen type={type} search={search} id={id} name={name} />
-      <PokedexButtons onHandleNext={onHandleNext} onHandlePrev={onHandlePrev} />
+      <PokedexInfoScreen
+        type={type}
+        search={search}
+        id={id}
+        name={name}
+        loading={loading}
+        error={error}
+      />
+      <PokedexButtons
+        onHandleNext={onHandleNext}
+        onHandlePrev={onHandlePrev}
+        position={position}
+      />
     </div>
   );
 };
@@ -209,22 +308,46 @@ const PokedexSearch = ({ onHandleSearch }) => {
   );
 };
 
-const PokedexInfoScreen = ({ type, id, name }) => {
+const PokedexInfoScreen = ({ type, id, name, loading, error }) => {
   return (
     <div className="pokedex-info-container">
-      <h2 className="pokemon-name">
-        {name.charAt(0).toUpperCase() + name.slice(1)}{' '}
-        {id > 0 ? `#${id}` : null}
-      </h2>
-      <ul className="pokemon-types">
-        <li>{type[0]}</li>
-        {type[1] ? <li>{type[1]}</li> : null}
-      </ul>
+      {loading ? (
+        <h2 className="pokemon-name">Loading...</h2>
+      ) : !error ? (
+        <>
+          <h2 className="pokemon-name">
+            {name.charAt(0).toUpperCase() + name.slice(1)}{' '}
+            {id > 0 ? `#${id}` : null}
+          </h2>
+          <ul className="pokemon-types">
+            <li>{type[0]}</li>
+            {type[1] ? <li>{type[1]}</li> : null}
+          </ul>
+        </>
+      ) : (
+        <h2 className="pokemon-name">Error: not found</h2>
+      )}
     </div>
   );
 };
 
-const PokedexButtons = ({ id, onHandleNext, onHandlePrev, onHandleSearch }) => {
+const PokedexButtons = ({ onHandleNext, onHandlePrev, position }) => {
+  const prevRef = useRef(null);
+  const nextRef = useRef(null);
+
+  useEffect(() => {
+    if (position <= 0) {
+      prevRef.current.innerHTML = '...';
+      nextRef.current.innerHTML = 'Next';
+    } else if (position >= 1301) {
+      nextRef.current.innerHTML = '...';
+      prevRef.current.innerHTML = 'Prev';
+    } else {
+      nextRef.current.innerHTML = 'Next';
+      prevRef.current.innerHTML = 'Prev';
+    }
+  });
+
   return (
     <>
       <div className="pokedex-buttons-shadow" />
@@ -251,10 +374,18 @@ const PokedexButtons = ({ id, onHandleNext, onHandlePrev, onHandleSearch }) => {
       </div>
       <div className="pokedex-goldButton" />
       <div className="pokedex-blackButtons">
-        <button className="pokedex-blackButton" onClick={onHandlePrev}>
+        <button
+          ref={prevRef}
+          className="pokedex-blackButton"
+          onClick={onHandlePrev}
+        >
           prev
         </button>
-        <button className="pokedex-blackButton" onClick={onHandleNext}>
+        <button
+          ref={nextRef}
+          className="pokedex-blackButton"
+          onClick={onHandleNext}
+        >
           next
         </button>
       </div>
