@@ -45,7 +45,7 @@ const Pokedex = () => {
     setPosition((prev) => prev + 1);
   };
 
-  // TODO: !!!!!  blinking lights & refactor
+  // TODO: !!!!! refactor
 
   useEffect(() => {
     const getPokemonList = async () => {
@@ -157,11 +157,15 @@ const PokedexLights = ({ loading }) => {
   const lightThreeRef = useRef(null);
 
   useEffect(() => {
-    // Change box shadow when loading prop changes
+    // make lights blink when loading
     if (loading) {
-      lightOneRef.current.classList.add = 'blink';
-      lightTwoRef.current.classList.add = 'blink';
-      lightThreeRef.current.classList.add = 'blink';
+      lightOneRef.current.classList.add('blink');
+      lightTwoRef.current.classList.add('blink');
+      lightThreeRef.current.classList.add('blink');
+    } else {
+      lightOneRef.current.classList.remove('blink');
+      lightTwoRef.current.classList.remove('blink');
+      lightThreeRef.current.classList.remove('blink');
     }
   }, [loading]);
 
