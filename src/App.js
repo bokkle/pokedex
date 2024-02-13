@@ -19,6 +19,8 @@ const Pokedex = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
+  console.log(sprite);
+
   const handleSearch = (value) => {
     setSearch(value);
   };
@@ -43,8 +45,7 @@ const Pokedex = () => {
     setPosition((prev) => prev + 1);
   };
 
-  // TODO: !!!!! loading states, blinking lights
-  // might need settimeout for loadstate
+  // TODO: !!!!!  blinking lights & refactor
 
   useEffect(() => {
     const getPokemonList = async () => {
@@ -191,7 +192,13 @@ const PokedexScreen = ({ sprite, animated, loading }) => {
           ) : (
             <img
               className="pokedex-screen-image"
-              src={animated ? animated : sprite}
+              src={
+                animated
+                  ? animated
+                  : sprite
+                  ? sprite
+                  : 'https://imgs.search.brave.com/f7FjotSM3giUdQRbFTMwB0GTUp7vbNeHkMQtcEheF9o/rs:fit:500:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvMi9RdWVz/dGlvbi1NYXJrLVRy/YW5zcGFyZW50LnBu/Zw'
+              }
               alt="pokemon sprite"
             />
           )}
